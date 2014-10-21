@@ -197,7 +197,9 @@ public class GlowPadView extends View {
     private int mTargetDescriptionsResourceId;
     private int mDirectionDescriptionsResourceId;
     private boolean mAlwaysTrackFinger;
+    private int mHorizontalOutset; // Used when view has been measured greater than its parent
     private int mHorizontalInset;
+    private int mVerticalOutset; // Used when view has been measured greater than its parent
     private int mVerticalInset;
     private int mGravity = Gravity.TOP;
     private boolean mInitialLayout = true;
@@ -1101,26 +1103,32 @@ public class GlowPadView extends View {
 
         switch (absoluteGravity & Gravity.HORIZONTAL_GRAVITY_MASK) {
             case Gravity.LEFT:
-                mHorizontalInset = 0;
+                mHorizontalOutset = 0;
+                mHorizontalInset = -dx;
                 break;
             case Gravity.RIGHT:
+                mHorizontalOutset = dx * 2;
                 mHorizontalInset = dx;
                 break;
             case Gravity.CENTER_HORIZONTAL:
             default:
-                mHorizontalInset = dx / 2;
+                mHorizontalOutset = dx;
+                mHorizontalInset = 0;
                 break;
         }
         switch (absoluteGravity & Gravity.VERTICAL_GRAVITY_MASK) {
             case Gravity.TOP:
-                mVerticalInset = 0;
+                mVerticalOutset = 0;
+                mVerticalInset = -dy;
                 break;
             case Gravity.BOTTOM:
+                mVerticalOutset = dy * 2;
                 mVerticalInset = dy;
                 break;
             case Gravity.CENTER_VERTICAL:
             default:
-                mVerticalInset = dy / 2;
+                mVerticalOutset = dy;
+                mVerticalInset = 0;
                 break;
         }
     }
@@ -1212,10 +1220,16 @@ public class GlowPadView extends View {
         // width or the specified outer radius.
         final float placementWidth = getRingWidth();
         final float placementHeight = getRingHeight();
-        float newWaveCenterX = mHorizontalInset
-                               + Math.max(width, mMaxTargetWidth + placementWidth) / 2;
-        float newWaveCenterY = mVerticalInset
-                               + Math.max(height, +mMaxTargetHeight + placementHeight) / 2;
+
+        float newWaveCenterX = Math.max(
+                mHorizontalInset + width,
+                mHorizontalOutset + mMaxTargetWidth + placementWidth
+                ) / 2;
+
+        float newWaveCenterY = Math.max(
+                mVerticalInset + height,
+                mVerticalOutset + mMaxTargetHeight + placementHeight
+                ) / 2;
 
         if (mInitialLayout) {
             stopAndHideWaveAnimation();
