@@ -10,10 +10,8 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:layout_below="@+id/btn_toggle_padmult"
-            android:layout_marginTop="-10dp"
-            android:layout_marginBottom="-46dp"
             android:visibility="visible"
-            android:gravity="top"
+            android:gravity="bottom"
 
             app:targetDrawables="@array/incoming_call_widget_2way_targets"
             app:handleDrawable="@drawable/ic_in_call_touch_handle"
