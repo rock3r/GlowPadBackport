@@ -20,7 +20,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
-import android.util.FloatMath;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -105,11 +104,11 @@ public class PointCloud {
     }
 
     class Point {
-        float x;
-        float y;
-        float radius;
+        double x;
+        double y;
+        double radius;
 
-        public Point(float x2, float y2, float r) {
+        public Point(double x2, double y2, double r) {
             x = x2;
             y = y2;
             radius = r;
@@ -159,11 +158,11 @@ public class PointCloud {
         for (int b = 0; b <= bands; b++, r += dr) {
             float circumference = 2.0f * PI * r;
             final int pointsInBand = (int) (circumference / ds);
-            float eta = PI / 2.0f;
+            double eta = PI / 2.0f;
             float dEta = 2.0f * PI / pointsInBand;
             for (int i = 0; i < pointsInBand; i++) {
-                float x = r * FloatMath.cos(eta);
-                float y = r * FloatMath.sin(eta);
+                double x = r * Math.cos(eta);
+                double y = r * Math.sin(eta);
                 eta += dEta;
                 mPointCloud.add(new Point(x, y, r));
             }
@@ -178,8 +177,8 @@ public class PointCloud {
         return mScale;
     }
 
-    private static float hypot(float x, float y) {
-        return FloatMath.sqrt(x * x + y * y);
+    private static double hypot(double x, double y) {
+        return Math.sqrt(x * x + y * y);
     }
 
     private static float max(float a, float b) {
@@ -188,26 +187,26 @@ public class PointCloud {
 
     public int getAlphaForPoint(Point point) {
         // Contribution from positional glow
-        float glowDistance = hypot(glowManager.x - point.x, glowManager.y - point.y);
+        double glowDistance = hypot(glowManager.x - point.x, glowManager.y - point.y);
         float glowAlpha = 0.0f;
         if (glowDistance < glowManager.radius) {
-            float cosf = FloatMath.cos(PI * 0.25f * glowDistance / glowManager.radius);
+            double cosf = Math.cos(PI * 0.25f * glowDistance / glowManager.radius);
             glowAlpha = glowManager.alpha * max(0.0f, (float) Math.pow(cosf, 10.0f));
         }
 
         // Compute contribution from Wave
-        float radius = hypot(point.x, point.y);
-        float distanceToWaveRing = (radius - waveManager.radius);
+        double radius = hypot(point.x, point.y);
+        double distanceToWaveRing = (radius - waveManager.radius);
         float waveAlpha = 0.0f;
         if (distanceToWaveRing < waveManager.width * 0.5f && distanceToWaveRing < 0.0f) {
-            float cosf = FloatMath.cos(PI * 0.25f * distanceToWaveRing / waveManager.width);
+            double cosf = Math.cos(PI * 0.25f * distanceToWaveRing / waveManager.width);
             waveAlpha = waveManager.alpha * max(0.0f, (float) Math.pow(cosf, 20.0f));
         }
 
         return (int) (max(glowAlpha, waveAlpha) * 255);
     }
 
-    private float interp(float min, float max, float f) {
+    private double interp(double min, double max, double f) {
         return min + (max - min) * f;
     }
 
@@ -217,28 +216,27 @@ public class PointCloud {
         canvas.scale(mScale, mScale, mCenterX, mCenterY);
         for (int i = 0; i < points.size(); i++) {
             Point point = points.get(i);
-            final float pointSize = interp(MAX_POINT_SIZE, MIN_POINT_SIZE,
-                                           point.radius / mOuterRadius);
-            final float px = point.x + mCenterX;
-            final float py = point.y + mCenterY;
+            final double pointSize = interp(MAX_POINT_SIZE, MIN_POINT_SIZE,
+                    point.radius / mOuterRadius);
+            final float px = (float) point.x + mCenterX;
+            final float py = (float) point.y + mCenterY;
             int alpha = getAlphaForPoint(point);
 
             if (alpha == 0) continue;
 
             if (mDrawable != null) {
                 canvas.save(Canvas.MATRIX_SAVE_FLAG);
-                final float cx = mDrawable.getIntrinsicWidth() * 0.5f;
-                final float cy = mDrawable.getIntrinsicHeight() * 0.5f;
-                final float s = pointSize / MAX_POINT_SIZE;
+                final float cx = (float) mDrawable.getIntrinsicWidth() * 0.5f;
+                final float cy = (float) mDrawable.getIntrinsicHeight() * 0.5f;
+                final float s = (float) pointSize / MAX_POINT_SIZE;
                 canvas.scale(s, s, px, py);
                 canvas.translate(px - cx, py - cy);
                 mDrawable.setAlpha(alpha);
                 mDrawable.draw(canvas);
                 canvas.restore();
-            }
-            else {
+            } else {
                 mPaint.setAlpha(alpha);
-                canvas.drawCircle(px, py, pointSize, mPaint);
+                canvas.drawCircle(px, py, (float) pointSize, mPaint);
             }
         }
         canvas.restore();
